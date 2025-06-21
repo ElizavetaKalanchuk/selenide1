@@ -16,3 +16,4 @@ jobs:
         run: java -jar ./artifacts/app-card-delivery.jar &
       - name: Test with Gradle
         run: ./gradlew test --info -Dselenide.headless=true
+        
