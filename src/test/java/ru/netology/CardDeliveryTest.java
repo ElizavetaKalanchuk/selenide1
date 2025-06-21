@@ -1,41 +1,67 @@
-package ru.netology;
+package ru.netology.delivery;
 
-import com.codeborne.selenide.Condition;
 import com.codeborne.selenide.Configuration;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import com.codeborne.selenide.Selenide;
+import com.codeborne.selenide.logevents.SelenideLogger;
+import io.qameta.allure.selenide.AllureSelenide;
+import org.junit.jupiter.api.*;
 import java.time.Duration;
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
+import org.openqa.selenium.Keys;
+
+import static com.codeborne.selenide.Condition.*;
 import static com.codeborne.selenide.Selenide.*;
 
 public class CardDeliveryTest {
 
-    @BeforeEach
-    void setup() {
-        Configuration.headless = true;
-        open("http://localhost:9999");
+    @BeforeAll
+    static void setUpAll() {
+        SelenideLogger.addListener("allure", new AllureSelenide());
+        Configuration.browser = "chrome";
+        Configuration.headless = false;
+        Configuration.timeout = 15000;
+        Configuration.pageLoadTimeout = 15000;
     }
 
-    private String generateDate(int days) {
-        return LocalDate.now().plusDays(days).format(DateTimeFormatter.ofPattern("dd.MM.yyyy"));
+    @BeforeEach
+    void setUp() {
+        open("http://localhost:9999");
+        $("[data-test-id=city] input").shouldBe(visible, Duration.ofSeconds(10));
     }
 
     @Test
-    void shouldSubmitSuccessfulRequest() {
-        String date = generateDate(3);
+    @DisplayName("Should successful plan meeting")
+    void shouldSubmitRequest() {
+        // Генерируем тестовые данные
+        var user = DataGenerator.Registration.generateUser("ru");
+        var deliveryDate = DataGenerator.generateDate(4);
 
-        $("[data-test-id=city] input").setValue("Москва");
+        // Заполняем город
+        $("[data-test-id=city] input").setValue(user.getCity().substring(0, 2));
+        $$(".menu-item").findBy(text(user.getCity())).click();
+
+        // Очищаем поле даты и заполняем
         $("[data-test-id=date] input").sendKeys(Keys.chord(Keys.SHIFT, Keys.HOME), Keys.BACK_SPACE);
-        $("[data-test-id=date] input").setValue(date);
-        $("[data-test-id=name] input").setValue("Иванов Иван");
-        $("[data-test-id=phone] input").setValue("+79270000000");
-        $("[data-test-id=agreement]").click();
-        $("button.button").click();
+        $("[data-test-id=date] input").setValue(deliveryDate);
 
-        $(".notification__content")
-                .shouldHave(Condition.text("Встреча успешно забронирована на " + date),
-                        Duration.ofSeconds(15))
-                .shouldBe(Condition.visible);
+        // Заполняем остальные поля
+        $("[data-test-id=name] input").setValue(user.getName());
+        $("[data-test-id=phone] input").setValue(user.getPhone());
+        $("[data-test-id=agreement]").click();
+
+        // Отправляем форму
+        $$("button").find(exactText("Забронировать")).click();
+
+        // Ожидаем появления уведомления (более надежный способ)
+        $(".notification").shouldBe(visible, Duration.ofSeconds(15));
+
+        // Проверяем текст в уведомлении
+        $(".notification .notification__content")
+                .shouldHave(text("Встреча успешно забронирована на " + deliveryDate))
+                .shouldBe(visible);
+    }
+
+    @AfterEach
+    void tearDown() {
+        closeWebDriver();
     }
 }
