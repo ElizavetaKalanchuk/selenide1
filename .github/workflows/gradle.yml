@@ -24,15 +24,8 @@ jobs:
           java -jar ./artifacts/app-card-delivery.jar &
           sleep 15
 
-      - name: Run tests with Gradle
-        run: ./gradlew test --info -Dselenide.headless=true
-
-      - name: Upload Allure report
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: allure-report
-          path: build/reports/allure-report
+      - name: Run tests
+        run: ./gradlew clean test --info -Dselenide.headless=true
 
       - name: Upload test results
         if: always()
@@ -40,5 +33,12 @@ jobs:
         with:
           name: test-results
           path: |
-            build/test-results
-            build/reports/tests
+            build/reports/tests/test
+            build/test-results/test
+
+      - name: Upload screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: selenide-screenshots
+          path: build/reports/tests
