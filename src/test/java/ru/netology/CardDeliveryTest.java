@@ -1,14 +1,19 @@
 package ru.netology;
 
+import com.codeborne.selenide.Condition;
+import com.codeborne.selenide.Selectors;
 import com.codeborne.selenide.Selenide;
+import com.codeborne.selenide.SelenideElement;
 import org.junit.jupiter.api.Test;
 import org.openqa.selenium.Keys;
 
+import java.nio.channels.Selector;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 
 import static com.codeborne.selenide.Condition.*;
+import static com.codeborne.selenide.Selectors.byText;
 import static com.codeborne.selenide.Selenide.*;
 import static org.openqa.selenium.remote.tracing.EventAttribute.setValue;
 
@@ -120,13 +125,13 @@ public class CardDeliveryTest {
     }
 
     @Test
-    void invalidDate() { // не верная дата 10.66.1111"
+    void invalidDate() { // не верная дата 11.66.1111"
         Selenide.open("http://localhost:9999/");
 
         $("[data-test-id='city'] input").shouldBe(visible, enabled).setValue("Ниж");
         $$(".menu-item").findBy(text("Нижний Новгород")).shouldBe(visible).click();
         $("[data-test-id='date'] input").sendKeys(Keys.chord(Keys.SHIFT, Keys.HOME), Keys.BACK_SPACE);
-        $("[data-test-id='date'] input").setValue("10.66.1111");
+        $("[data-test-id='date'] input").setValue("11.66.1111");
         $("[data-test-id='name'] input").setValue("Иванов Иван Иванович");
         $("[data-test-id='phone'] input").setValue("+79999999999");
         $("[data-test-id='agreement']").click();
@@ -135,13 +140,13 @@ public class CardDeliveryTest {
     }
 
     @Test
-    void repeatedInvalidDate() { // не верная дата 10.02.2025
+    void repeatedInvalidDate() { // не верная дата 10.06.2025
         Selenide.open("http://localhost:9999/");
 
         $("[data-test-id='city'] input").shouldBe(visible, enabled).setValue("Ниж");
         $$(".menu-item").findBy(text("Нижний Новгород")).shouldBe(visible).click();
         $("[data-test-id='date'] input").sendKeys(Keys.chord(Keys.SHIFT, Keys.HOME), Keys.BACK_SPACE);
-        $("[data-test-id='date'] input").setValue("10.02.2025");
+        $("[data-test-id='date'] input").setValue("10.06.2025");
         $("[data-test-id='name'] input").setValue("Иванов Иван Иванович");
         $("[data-test-id='phone'] input").setValue("+79999999999");
         $("[data-test-id='agreement']").click();
@@ -150,14 +155,14 @@ public class CardDeliveryTest {
     }
 
     @Test
-    void invalidName() { // не валидная фамилия
+    void invalidName() { // не валидное имя
         String planingDate = generateDate(3, "dd.MM.yyyy");
         Selenide.open("http://localhost:9999/");
 
         $("[data-test-id='city'] input").shouldBe(visible, enabled).setValue("Ниж");
         $$(".menu-item").findBy(text("Нижний Новгород")).shouldBe(visible).click();
         $("[data-test-id='date'] input").sendKeys(Keys.chord(Keys.SHIFT, Keys.HOME), Keys.BACK_SPACE, planingDate);
-        $("[data-test-id='name'] input").setValue("Ivano Ivan Ivanovich");
+        $("[data-test-id='name'] input").setValue("Ivnov Ivan Ivanovich");
         $("[data-test-id='phone'] input").setValue("+79999999999");
         $("[data-test-id='agreement']").click();
         $$("button").findBy(text("Забронировать")).click();
@@ -173,7 +178,7 @@ public class CardDeliveryTest {
         $$(".menu-item").findBy(text("Нижний Новгород")).shouldBe(visible).click();
         $("[data-test-id='date'] input").sendKeys(Keys.chord(Keys.SHIFT, Keys.HOME), Keys.BACK_SPACE, planingDate);
         $("[data-test-id='name'] input").setValue("Иванов Иван Иванович");
-        $("[data-test-id='phone'] input").setValue("+7999999999999");
+        $("[data-test-id='phone'] input").setValue("+799999999999");
         $("[data-test-id='agreement']").click();
         $$("button").findBy(text("Забронировать")).click();
         $$("[data-test-id='phone'].input_invalid .input__sub").findBy(text("Телефон указан неверно. Должно быть 11 цифр, например, +79012345678.")).shouldBe(visible);
